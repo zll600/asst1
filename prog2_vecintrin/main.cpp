@@ -249,7 +249,36 @@ void clampedExpVector(float* values, int* exponents, float* output, int N) {
   // Your solution should work for any value of
   // N and VECTOR_WIDTH, not just when VECTOR_WIDTH divides N
   //
-  
+  int i;
+  __cs149_vec_float result;
+  __cs149_vec_float value;
+  __cs149_vec_int exp;
+  __cs149_vec_int zero = _cs149_vset_int(0);
+  __cs149_vec_int one = _cs149_vset_int(1);
+  __cs149_vec_float upper_bound = _cs149_vset_float(9.999999f);
+  __cs149_mask maskAll = _cs149_init_ones(); // mask all
+  for (i = 0; i + VECTOR_WIDTH <= N; i += VECTOR_WIDTH) {
+    result = _cs149_vset_float(1.f);
+    _cs149_vload_float(value, values + i, maskAll); 
+    _cs149_vload_int(exp, exponents + i, maskAll);
+    __cs149_mask needMul;
+    _cs149_vgt_int(needMul, exp, zero, maskAll);
+    while (_cs149_cntbits(needMul)) {
+      _cs149_vmult_float(result, result, value, needMul);
+      _cs149_vsub_int(exp, exp, one, needMul);
+      _cs149_vgt_int(needMul, exp, zero, needMul);
+    }
+    __cs149_mask clampMask;
+    _cs149_vgt_float(clampMask, result, upper_bound, maskAll);
+    _cs149_vset_float(result, 9.999999f, clampMask);
+    _cs149_vstore_float(output + i, result, maskAll);
+  }
+
+  //tail part
+  if (i != N) {
+    i -= VECTOR_WIDTH;
+    clampedExpSerial(values + i, exponents + i, output + i, N - i);
+  }
 }
 
 // returns the sum of all elements in values
