@@ -126,5 +126,5 @@ Answer : Ideally, this programme may achieve 8x speedup since ISPC emits 8-wide 
 
 2. **Extra Credit:** (1 point) Note that the total memory bandwidth consumed computation in `main.cpp` is `TOTAL_BYTES = 4 * N * sizeof(float);`. Even though `saxpy` loads one element from X, one element from Y, and writes one element to `result` the multiplier by 4 is correct. Why is this the case? (Hint, think about how CPU caches work.)
 
-   Answer : the write-back strategy makes the write action require two data transfer. One for write the value into memory, another for load the value into cache. 
+   Answer : When the program writes to one element of `result`, it will first fetch the cache line which contains this element into the cache. This requires one memory operation. Then when this cache line is not needed, it will be flashed out of the cache, this requires another memory operation. 
 
